@@ -29,15 +29,18 @@ std::string hasData(std::string s) {
 int main()
 {
   uWS::Hub h;
+//std::cout<<"main1";
 
   // Create a Kalman Filter instance
   FusionEKF fusionEKF;
 
+//std::cout<<"main2";
   // used to compute the RMSE later
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
+//std::cout<<"main3";
   h.onMessage([&fusionEKF,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -56,6 +59,7 @@ int main()
         if (event == "telemetry") {
           // j[1] is the data JSON object
           
+//std::cout<<"main4";
           string sensor_measurment = j[1]["sensor_measurement"];
           
           MeasurementPackage meas_package;
@@ -67,6 +71,7 @@ int main()
     	  iss >> sensor_type;
 
     	  if (sensor_type.compare("L") == 0) {
+//std::cout<<"main5";
       	  		meas_package.sensor_type_ = MeasurementPackage::LASER;
           		meas_package.raw_measurements_ = VectorXd(2);
           		float px;
@@ -78,6 +83,7 @@ int main()
           		meas_package.timestamp_ = timestamp;
           } else if (sensor_type.compare("R") == 0) {
 
+//std::cout<<"main6";
       	  		meas_package.sensor_type_ = MeasurementPackage::RADAR;
           		meas_package.raw_measurements_ = VectorXd(3);
           		float ro;
@@ -90,6 +96,7 @@ int main()
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
           }
+//std::cout<<"main7";
           float x_gt;
     	  float y_gt;
     	  float vx_gt;
@@ -106,10 +113,12 @@ int main()
     	  ground_truth.push_back(gt_values);
           
           //Call ProcessMeasurment(meas_package) for Kalman filter
+//std::cout<<"main8";
     	  fusionEKF.ProcessMeasurement(meas_package);    	  
 
     	  //Push the current estimated x,y positon from the Kalman filter's state vector
 
+//std::cout<<"mainestimatebeg";
     	  VectorXd estimate(4);
 
     	  double p_x = fusionEKF.ekf_.x_(0);
@@ -122,6 +131,7 @@ int main()
     	  estimate(2) = v1;
     	  estimate(3) = v2;
     	  
+//std::cout<<"mainestimateend";
     	  estimations.push_back(estimate);
 
     	  VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
